@@ -19,7 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <Wire.h>
 #include "MAX30100_PulseOximeter.h"
 
-#define REPORTING_PERIOD_MS     1000
+#define REPORTING_PERIOD_MS     100
+#define SAMPLING_WINDOW   30
+#define AWAKE_HEART_RATE 40
 
 // PulseOximeter is the higher level interface to the sensor
 // it offers:
@@ -36,7 +38,7 @@ int buzzer = 12;
 // Callback (registered below) fired when a pulse is detected
 void onBeatDetected()
 {
-    Serial.println("Beat!");
+    //Serial.println("Beat!");
 }
 
 void setup()
@@ -44,16 +46,16 @@ void setup()
     pinMode(buzzer, OUTPUT);
     Serial.begin(9600);
 
-    Serial.print("Initializing pulse oximeter..");
+   // Serial.print("Initializing pulse oximeter..");
 
     // Initialize the PulseOximeter instance
     // Failures are generally due to an improper I2C wiring, missing power supply
     // or wrong target chip
     if (!pox.begin()) {
-        Serial.println("FAILED");
+        //Serial.println("FAILED");
         for(;;);
     } else {
-        Serial.println("SUCCESS");
+        //Serial.println("SUCCESS");
     }
 
     // The default current for the IR LED is 50mA and it could be changed
@@ -74,25 +76,29 @@ void loop()
     // For both, a value of 0 means "invalid"
     
     if (millis() - tsLastReport > REPORTING_PERIOD_MS) {
-        Serial.print("Heart rate:");
-        Serial.print(pox.getHeartRate());
-        Serial.println();
+        //Serial.print("Heart rate:");
+        //Serial.print(pox.getHeartRate());
+        //Serial.println();
         tsLastReport = millis();
         
-        if(count!=30){
-          heart_rate_sum += pox.getHeartRate();
+        if(count!=SAMPLING_WINDOW){
+          heart_rate_sum += (pox.getHeartRate()); // dividing by 2 for error
           count++;
         }
-        else if(count==30){
-          Serial.print("Heart rate:");
-          Serial.print(heart_rate_sum/30);
-          if (heart_rate_sum<55){
+        else if(count==SAMPLING_WINDOW){
+          //Serial.print("Heart rate:");
+          // csv format
+          Serial.print(millis());
+          Serial.print(",");
+          Serial.print(heart_rate_sum/(2*SAMPLING_WINDOW));
+          Serial.println();
+          if (heart_rate_sum < AWAKE_HEART_RATE){
             //turn on buzzer 
             digitalWrite(buzzer, HIGH);
-            delay(5000);
+            delay(5000); // sec
             //turn off the buzzer
             digitalWrite(buzzer, LOW);
-            delay(10000);
+            delay(10000); //sec
           }
           heart_rate_sum = 0;
           count = 0;
