@@ -1,5 +1,6 @@
 # ECaff 
-A hardware and software based Project for NewHacks 2022: A prototype solution for monitoring your health
+A hardware and software based Project for NewHacks 2022: A prototype solution for monitoring your health.<br/>
+Read more: https://devpost.com/software/ecaff
 ##
 
 ![first image](https://github.com/TanishSh/NewHacks2022/blob/main/Images/board.jpg)
